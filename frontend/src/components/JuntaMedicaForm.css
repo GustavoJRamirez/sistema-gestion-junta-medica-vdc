@@ -1,0 +1,240 @@
+/* JuntaMedicaForm.css */
+.junta-layout {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px); /* Adjust based on header/footer height */
+  background: #f5f5f7;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  margin: 0 auto;
+  max-width: 1400px;
+}
+
+/* Tabs Navigation */
+.junta-tabs {
+  display: flex;
+  background: white;
+  border-bottom: 1px solid #e1e4e8;
+  overflow-x: auto;
+  flex-shrink: 0;
+  padding: 0 10px;
+}
+
+.junta-tab {
+  padding: 15px 20px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.junta-tab:hover {
+  color: #3b82f6;
+  background: #f8fafc;
+}
+
+.junta-tab.active {
+  border-bottom-color: #3b82f6;
+  color: #3b82f6;
+  background: #eff6ff;
+}
+
+/* Scrollable Content Area */
+.junta-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px;
+  background: #f8fafc;
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar Styling */
+.junta-content-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.junta-content-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.junta-content-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.junta-content-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Section Card Styling */
+.junta-section-card {
+  background: white;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.junta-section-header {
+  margin-bottom: 25px;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.junta-section-header h2 {
+  color: #1e293b;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.junta-section-number {
+  background: #3b82f6;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* Form Elements */
+.junta-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.junta-form-group {
+  margin-bottom: 15px;
+}
+
+.junta-form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.junta-form-group input,
+.junta-form-group select,
+.junta-form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.junta-form-group input:focus,
+.junta-form-group select:focus,
+.junta-form-group textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.junta-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.junta-checkbox-item {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.junta-checkbox-item:hover {
+  border-color: #bdcccf;
+  background: #f1f5f9;
+}
+
+.junta-checkbox-item input {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+  accent-color: #3b82f6;
+}
+
+/* Alert Box */
+.junta-alert {
+  background: #fffbeb;
+  border-left: 4px solid #f59e0b;
+  padding: 15px;
+  border-radius: 8px;
+  color: #92400e;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: start;
+}
+
+/* Footer Actions */
+.junta-actions-bar {
+  background: white;
+  padding: 15px 30px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-secondary {
+  background: white;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}

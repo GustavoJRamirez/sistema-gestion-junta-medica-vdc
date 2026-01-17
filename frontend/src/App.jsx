@@ -2,6 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import NewJuntaPage from './pages/NewJuntaPage';
+import JuntasListPage from './pages/JuntasListPage';
+import PatientsPage from './pages/PatientsPage';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -22,20 +25,39 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={
-        user ? <Navigate to="/dashboard" replace /> : <LoginPage />
+        user ? <Navigate to="/juntas/new" replace /> : <LoginPage />
       } />
 
       <Route path="/dashboard" element={
         <ProtectedRoute>
-          <DashboardPage />
+          <Navigate to="/juntas/new" replace />
         </ProtectedRoute>
       } />
 
-      {/* Redirect root to dashboard (which will redirect to login if not auth) */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/juntas/new" element={
+        <ProtectedRoute>
+          <NewJuntaPage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/juntas" element={
+        <ProtectedRoute>
+          <JuntasListPage />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/patients" element={
+        <ProtectedRoute>
+          <PatientsPage />
+        </ProtectedRoute>
+      } />
+
+
+      {/* Redirect root to juntas/new */}
+      <Route path="/" element={<Navigate to="/juntas/new" replace />} />
 
       {/* Catch all */}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/juntas/new" replace />} />
     </Routes>
   );
 }

@@ -21,29 +21,24 @@ export default function DashboardLayout({ children }) {
 
     const menuItems = {
         administrativo: [
-            { label: 'Dashboard', icon: Home, path: '/dashboard' },
+            { label: 'Juntas', icon: ClipboardList, path: '/juntas' },
             { label: 'Usuarios', icon: Users, path: '/users' },
             { label: 'Pacientes', icon: UserPlus, path: '/patients' },
-            { label: 'Juntas', icon: ClipboardList, path: '/juntas' },
         ],
         medico_evaluador: [
-            { label: 'Dashboard', icon: Home, path: '/dashboard' },
-            { label: 'Mis Juntas', icon: ClipboardList, path: '/juntas?mine=true' },
             { label: 'Nueva Junta', icon: ClipboardList, path: '/juntas/new' },
+            { label: 'Mis Juntas', icon: ClipboardList, path: '/juntas?mine=true' },
             { label: 'Pacientes', icon: Users, path: '/patients' },
         ],
         director_medico: [
-            { label: 'Dashboard', icon: Home, path: '/dashboard' },
             { label: 'Pendientes', icon: Clock, path: '/juntas?estado=EN_REVISION' },
             { label: 'Todas las Juntas', icon: ClipboardList, path: '/juntas' },
         ],
         rrhh: [
-            { label: 'Dashboard', icon: Home, path: '/dashboard' },
             { label: 'Juntas', icon: ClipboardList, path: '/juntas' },
             { label: 'Reportes', icon: FileText, path: '/reports' },
         ],
         gerencial: [
-            { label: 'Dashboard', icon: Home, path: '/dashboard' },
             { label: 'Métricas', icon: BarChart3, path: '/metrics' },
             { label: 'Juntas', icon: ClipboardList, path: '/juntas' },
         ]
@@ -65,7 +60,11 @@ export default function DashboardLayout({ children }) {
                 <nav className="p-4 space-y-2">
                     {currentMenu.map((item, index) => {
                         const Icon = item.icon;
-                        const isActive = location.pathname === item.path;
+                        // Better Check for Active State: Includes query params if present
+                        const isActive = item.path.includes('?')
+                            ? (location.pathname + location.search) === item.path
+                            : location.pathname === item.path;
+
                         return (
                             <button
                                 key={index}
