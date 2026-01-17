@@ -1,0 +1,597 @@
+{
+  "app": "Sistema de Gestión de Juntas Médicas VDC",
+  "version": "1.0.0",
+  "sections": [
+    {
+      "id": "login",
+      "path": "/login",
+      "title": "Iniciar Sesión",
+      "layout": "centered-card",
+      "roles": ["*"],
+      "fields": [
+        {
+          "id": "email",
+          "label": "Correo Electrónico",
+          "type": "email",
+          "placeholder": "usuario@vdc.com",
+          "validations": { "required": true, "pattern": "^[^@]+@[^@]+\\.[^@]+$" },
+          "viewRoles": ["*"],
+          "editRoles": ["*"]
+        },
+        {
+          "id": "password",
+          "label": "Contraseña",
+          "type": "password",
+          "validations": { "required": true, "minLength": 6 },
+          "viewRoles": ["*"],
+          "editRoles": ["*"]
+        }
+      ],
+      "actions": [
+        { "id": "btn_login", "label": "Ingresar", "type": "submit", "variant": "primary" }
+      ]
+    },
+    {
+      "id": "dashboard",
+      "path": "/dashboard",
+      "title": "Panel Principal",
+      "layout": "sidebar-main",
+      "roles": ["administrativo", "medico_evaluador", "director_medico", "rrhh", "gerencial"],
+      "widgets": {
+        "administrativo": [
+          { "id": "widget_users", "title": "Usuarios", "type": "stat", "link": "/users" },
+          { "id": "widget_patients", "title": "Pacientes", "type": "stat", "link": "/patients" },
+          { "id": "widget_juntas_pending", "title": "Juntas Programadas", "type": "stat", "link": "/juntas" }
+        ],
+        "medico_evaluador": [
+          { "id": "widget_my_juntas", "title": "Mis Juntas", "type": "stat", "link": "/juntas?mine=true" },
+          { "id": "widget_borradores", "title": "Borradores", "type": "stat", "link": "/juntas?estado=BORRADOR" },
+          { "id": "widget_quick_new", "title": "Nueva Junta", "type": "action", "link": "/juntas/new" }
+        ],
+        "director_medico": [
+          { "id": "widget_pending_review", "title": "Pendientes de Revisión", "type": "stat", "link": "/juntas?estado=EN_REVISION" },
+          { "id": "widget_approved", "title": "Aprobadas (Mes)", "type": "stat" },
+          { "id": "widget_rejected", "title": "Rechazadas (Mes)", "type": "stat" }
+        ],
+        "rrhh": [
+          { "id": "widget_juntas_month", "title": "Juntas del Mes", "type": "stat", "link": "/juntas" },
+          { "id": "widget_export", "title": "Exportar Reporte", "type": "action", "action": "exportReport" }
+        ],
+        "gerencial": [
+          { "id": "widget_chart_juntas", "title": "Juntas por Período", "type": "chart" },
+          { "id": "widget_chart_approvals", "title": "Tasa de Aprobación", "type": "chart" },
+          { "id": "widget_avg_time", "title": "Tiempo Promedio", "type": "stat" }
+        ]
+      }
+    },
+    {
+      "id": "juntas_list",
+      "path": "/juntas",
+      "title": "Listado de Juntas",
+      "layout": "table-view",
+      "roles": ["administrativo", "medico_evaluador", "director_medico", "rrhh", "gerencial"],
+      "filters": [
+        { "id": "filter_estado", "label": "Estado", "type": "select", "options": ["BORRADOR", "EN_REVISION", "APROBADA", "RECHAZADA"] },
+        { "id": "filter_fecha_desde", "label": "Desde", "type": "date" },
+        { "id": "filter_fecha_hasta", "label": "Hasta", "type": "date" },
+        { "id": "filter_medico", "label": "Médico Evaluador", "type": "select", "roles": ["administrativo", "director_medico"] }
+      ],
+      "columns": [
+        { "id": "col_id", "label": "ID", "viewRoles": ["*"] },
+        { "id": "col_fecha", "label": "Fecha Realización", "viewRoles": ["*"] },
+        { "id": "col_pacientes", "label": "Pacientes", "viewRoles": ["administrativo", "medico_evaluador", "director_medico", "rrhh"] },
+        { "id": "col_medico", "label": "Médico Evaluador", "viewRoles": ["*"] },
+        { "id": "col_estado", "label": "Estado", "viewRoles": ["*"] },
+        { "id": "col_acciones", "label": "Acciones", "viewRoles": ["*"] }
+      ],
+      "actions": [
+        { "id": "btn_new_junta", "label": "Nueva Junta", "roles": ["administrativo", "medico_evaluador"], "link": "/juntas/new" }
+      ]
+    },
+    {
+      "id": "junta_new",
+      "path": "/juntas/new",
+      "title": "Nueva Junta Médica",
+      "layout": "form-wizard",
+      "roles": ["administrativo", "medico_evaluador"],
+      "steps": [
+        {
+          "id": "step_info",
+          "title": "Información General",
+          "fields": [
+            {
+              "id": "fecha_programada",
+              "label": "Fecha Programada",
+              "type": "date",
+              "validations": { "required": false },
+              "viewRoles": ["administrativo", "medico_evaluador", "director_medico"],
+              "editRoles": ["administrativo", "medico_evaluador"]
+            },
+            {
+              "id": "fecha_realizacion",
+              "label": "Fecha de Realización",
+              "type": "date",
+              "validations": { "required": true },
+              "viewRoles": ["*"],
+              "editRoles": ["administrativo", "medico_evaluador"]
+            }
+          ]
+        },
+        {
+          "id": "step_nomina",
+          "title": "Nómina de Participantes",
+          "fields": [
+            {
+              "id": "pacientes",
+              "label": "Pacientes",
+              "type": "multi-select",
+              "source": "/api/patients",
+              "validations": { "required": true, "minItems": 1 },
+              "viewRoles": ["administrativo", "medico_evaluador", "director_medico", "rrhh"],
+              "editRoles": ["administrativo", "medico_evaluador"]
+            },
+            {
+              "id": "medicos_participantes",
+              "label": "Médicos Participantes",
+              "type": "multi-select",
+              "source": "/api/users?role=medico_evaluador",
+              "validations": { "required": false },
+              "viewRoles": ["*"],
+              "editRoles": ["administrativo", "medico_evaluador"]
+            },
+            {
+              "id": "observadores",
+              "label": "Observadores",
+              "type": "multi-select",
+              "source": "/api/users",
+              "validations": { "required": false },
+              "viewRoles": ["administrativo", "medico_evaluador", "director_medico"],
+              "editRoles": ["administrativo", "medico_evaluador"]
+            }
+          ]
+        },
+        {
+          "id": "step_dictamen",
+          "title": "Dictamen Médico",
+          "note": "MISSING:campos_dictamen_medico - Formulario placeholder hasta recibir documento oficial",
+          "fields": [
+            {
+              "id": "dictamen_diagnostico",
+              "label": "Diagnóstico (Demo)",
+              "type": "textarea",
+              "placeholder": "Ingrese el diagnóstico...",
+              "validations": { "required": true },
+              "viewRoles": ["administrativo", "medico_evaluador", "director_medico", "gerencial"],
+              "editRoles": ["medico_evaluador"],
+              "hiddenFor": ["rrhh"]
+            },
+            {
+              "id": "dictamen_conclusion",
+              "label": "Conclusión (Demo)",
+              "type": "textarea",
+              "placeholder": "Ingrese la conclusión...",
+              "validations": { "required": true },
+              "viewRoles": ["administrativo", "medico_evaluador", "director_medico", "gerencial"],
+              "editRoles": ["medico_evaluador"],
+              "hiddenFor": ["rrhh"]
+            },
+            {
+              "id": "dictamen_recomendaciones",
+              "label": "Recomendaciones (Demo)",
+              "type": "textarea",
+              "placeholder": "Ingrese recomendaciones...",
+              "validations": { "required": false },
+              "viewRoles": ["administrativo", "medico_evaluador", "director_medico", "gerencial"],
+              "editRoles": ["medico_evaluador"],
+              "hiddenFor": ["rrhh"]
+            }
+          ]
+        },
+        {
+          "id": "step_documentos",
+          "title": "Documentos Adjuntos",
+          "fields": [
+            {
+              "id": "documentos",
+              "label": "Adjuntar Archivos",
+              "type": "file",
+              "accept": ".pdf,.jpg,.jpeg,.png",
+              "multiple": true,
+              "maxSize": "10MB",
+              "validations": { "required": false },
+              "viewRoles": ["administrativo", "medico_evaluador", "director_medico"],
+              "editRoles": ["administrativo", "medico_evaluador"]
+            }
+          ]
+        }
+      ],
+      "actions": [
+        { "id": "btn_save_draft", "label": "Guardar Borrador", "type": "button", "variant": "secondary", "action": "saveDraft" },
+        { "id": "btn_send_review", "label": "Enviar a Revisión", "type": "submit", "variant": "primary", "action": "sendToReview" }
+      ]
+    },
+    {
+      "id": "junta_detail",
+      "path": "/juntas/:id",
+      "title": "Detalle de Junta",
+      "layout": "detail-view",
+      "roles": ["administrativo", "medico_evaluador", "director_medico", "rrhh", "gerencial"],
+      "sections": [
+        {
+          "id": "section_header",
+          "title": "Estado y Fechas",
+          "fields": [
+            { "id": "estado", "label": "Estado", "type": "badge", "viewRoles": ["*"], "editRoles": [] },
+            { "id": "fecha_programada", "label": "Fecha Programada", "type": "date", "viewRoles": ["*"], "editRoles": [] },
+            { "id": "fecha_realizacion", "label": "Fecha Realización", "type": "date", "viewRoles": ["*"], "editRoles": [] },
+            { "id": "medico_evaluador", "label": "Médico Evaluador", "type": "text", "viewRoles": ["*"], "editRoles": [] }
+          ]
+        },
+        {
+          "id": "section_nomina",
+          "title": "Nómina",
+          "fields": [
+            { "id": "pacientes_list", "label": "Pacientes", "type": "list", "viewRoles": ["administrativo", "medico_evaluador", "director_medico", "rrhh"], "editRoles": [] },
+            { "id": "medicos_list", "label": "Médicos Participantes", "type": "list", "viewRoles": ["*"], "editRoles": [] },
+            { "id": "observadores_list", "label": "Observadores", "type": "list", "viewRoles": ["administrativo", "medico_evaluador", "director_medico"], "editRoles": [] }
+          ]
+        },
+        {
+          "id": "section_dictamen",
+          "title": "Dictamen Médico",
+          "viewRoles": ["administrativo", "medico_evaluador", "director_medico", "gerencial"],
+          "hiddenFor": ["rrhh"],
+          "fields": [
+            { "id": "dictamen_diagnostico", "label": "Diagnóstico", "type": "text", "viewRoles": ["administrativo", "medico_evaluador", "director_medico", "gerencial"], "editRoles": [] },
+            { "id": "dictamen_conclusion", "label": "Conclusión", "type": "text", "viewRoles": ["administrativo", "medico_evaluador", "director_medico", "gerencial"], "editRoles": [] },
+            { "id": "dictamen_recomendaciones", "label": "Recomendaciones", "type": "text", "viewRoles": ["administrativo", "medico_evaluador", "director_medico", "gerencial"], "editRoles": [] }
+          ]
+        },
+        {
+          "id": "section_documentos",
+          "title": "Documentos Adjuntos",
+          "viewRoles": ["administrativo", "medico_evaluador", "director_medico"],
+          "fields": [
+            { "id": "documentos_list", "label": "Archivos", "type": "file-list", "viewRoles": ["administrativo", "medico_evaluador", "director_medico"], "editRoles": [] }
+          ]
+        },
+        {
+          "id": "section_revision",
+          "title": "Revisión del Director",
+          "viewRoles": ["administrativo", "medico_evaluador", "director_medico"],
+          "showWhen": { "estado": ["EN_REVISION", "APROBADA", "RECHAZADA"] },
+          "fields": [
+            { "id": "director_revisor", "label": "Director Revisor", "type": "text", "viewRoles": ["*"], "editRoles": [] },
+            { "id": "fecha_revision", "label": "Fecha Revisión", "type": "datetime", "viewRoles": ["*"], "editRoles": [] },
+            { "id": "motivo_rechazo", "label": "Motivo de Rechazo", "type": "textarea", "viewRoles": ["administrativo", "medico_evaluador", "director_medico"], "editRoles": [], "showWhen": { "estado": "RECHAZADA" } }
+          ]
+        }
+      ],
+      "actions": {
+        "medico_evaluador": [
+          { "id": "btn_edit", "label": "Editar", "showWhen": { "estado": "BORRADOR", "isOwner": true }, "link": "/juntas/:id/edit" },
+          { "id": "btn_send_review", "label": "Enviar a Revisión", "showWhen": { "estado": "BORRADOR", "isOwner": true }, "action": "sendToReview" }
+        ],
+        "director_medico": [
+          { "id": "btn_approve", "label": "Aprobar", "variant": "success", "showWhen": { "estado": "EN_REVISION" }, "action": "approve" },
+          { "id": "btn_reject", "label": "Rechazar", "variant": "danger", "showWhen": { "estado": "EN_REVISION" }, "action": "reject", "requiresComment": true }
+        ]
+      }
+    },
+    {
+      "id": "patients_list",
+      "path": "/patients",
+      "title": "Listado de Pacientes",
+      "layout": "table-view",
+      "roles": ["administrativo", "medico_evaluador"],
+      "filters": [
+        { "id": "filter_search", "label": "Buscar", "type": "text", "placeholder": "Nombre o DNI..." },
+        { "id": "filter_sexo", "label": "Sexo", "type": "select", "options": ["M", "F", "OTRO"] }
+      ],
+      "columns": [
+        { "id": "col_dni", "label": "DNI", "viewRoles": ["administrativo", "medico_evaluador"] },
+        { "id": "col_nombre", "label": "Nombre Completo", "viewRoles": ["administrativo", "medico_evaluador"] },
+        { "id": "col_fecha_nac", "label": "Fecha Nacimiento", "viewRoles": ["administrativo", "medico_evaluador"] },
+        { "id": "col_sexo", "label": "Sexo", "viewRoles": ["administrativo", "medico_evaluador"] },
+        { "id": "col_acciones", "label": "Acciones", "viewRoles": ["administrativo", "medico_evaluador"] }
+      ],
+      "actions": [
+        { "id": "btn_new_patient", "label": "Nuevo Paciente", "roles": ["administrativo"], "link": "/patients/new" }
+      ]
+    },
+    {
+      "id": "patient_form",
+      "path": "/patients/new",
+      "altPath": "/patients/:id/edit",
+      "title": "Formulario de Paciente",
+      "layout": "form-single",
+      "roles": ["administrativo"],
+      "fields": [
+        {
+          "id": "nombre_completo",
+          "label": "Nombre Completo",
+          "type": "text",
+          "validations": { "required": true, "minLength": 3 },
+          "viewRoles": ["administrativo", "medico_evaluador"],
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "dni",
+          "label": "DNI",
+          "type": "text",
+          "validations": { "required": true, "pattern": "^[0-9]{7,8}$" },
+          "viewRoles": ["administrativo", "medico_evaluador"],
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "fecha_nacimiento",
+          "label": "Fecha de Nacimiento",
+          "type": "date",
+          "validations": { "required": true },
+          "viewRoles": ["administrativo", "medico_evaluador"],
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "sexo",
+          "label": "Sexo",
+          "type": "select",
+          "options": [
+            { "value": "M", "label": "Masculino" },
+            { "value": "F", "label": "Femenino" },
+            { "value": "OTRO", "label": "Otro" }
+          ],
+          "validations": { "required": true },
+          "viewRoles": ["administrativo", "medico_evaluador"],
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "telefono",
+          "label": "Teléfono",
+          "type": "tel",
+          "validations": { "required": false },
+          "viewRoles": ["administrativo", "medico_evaluador"],
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "email",
+          "label": "Email",
+          "type": "email",
+          "validations": { "required": false, "pattern": "^[^@]+@[^@]+\\.[^@]+$" },
+          "viewRoles": ["administrativo", "medico_evaluador"],
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "direccion_calle",
+          "label": "Calle",
+          "type": "text",
+          "validations": { "required": false },
+          "viewRoles": ["administrativo"],
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "direccion_numero",
+          "label": "Número",
+          "type": "text",
+          "validations": { "required": false },
+          "viewRoles": ["administrativo"],
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "direccion_localidad",
+          "label": "Localidad",
+          "type": "text",
+          "validations": { "required": false },
+          "viewRoles": ["administrativo"],
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "direccion_provincia",
+          "label": "Provincia",
+          "type": "select",
+          "source": "provincias_argentina",
+          "validations": { "required": false },
+          "viewRoles": ["administrativo"],
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "direccion_cp",
+          "label": "Código Postal",
+          "type": "text",
+          "validations": { "required": false, "pattern": "^[0-9A-Z]{4,8}$" },
+          "viewRoles": ["administrativo"],
+          "editRoles": ["administrativo"]
+        }
+      ],
+      "actions": [
+        { "id": "btn_cancel", "label": "Cancelar", "type": "button", "variant": "secondary", "action": "cancel" },
+        { "id": "btn_save", "label": "Guardar", "type": "submit", "variant": "primary" }
+      ]
+    },
+    {
+      "id": "patient_detail",
+      "path": "/patients/:id",
+      "title": "Detalle de Paciente",
+      "layout": "detail-view",
+      "roles": ["administrativo", "medico_evaluador"],
+      "sections": [
+        {
+          "id": "section_personal",
+          "title": "Datos Personales",
+          "fields": [
+            { "id": "nombre_completo", "label": "Nombre Completo", "type": "text", "viewRoles": ["administrativo", "medico_evaluador"] },
+            { "id": "dni", "label": "DNI", "type": "text", "viewRoles": ["administrativo", "medico_evaluador"] },
+            { "id": "fecha_nacimiento", "label": "Fecha Nacimiento", "type": "date", "viewRoles": ["administrativo", "medico_evaluador"] },
+            { "id": "sexo", "label": "Sexo", "type": "text", "viewRoles": ["administrativo", "medico_evaluador"] }
+          ]
+        },
+        {
+          "id": "section_contacto",
+          "title": "Contacto",
+          "fields": [
+            { "id": "telefono", "label": "Teléfono", "type": "text", "viewRoles": ["administrativo", "medico_evaluador"] },
+            { "id": "email", "label": "Email", "type": "text", "viewRoles": ["administrativo", "medico_evaluador"] }
+          ]
+        },
+        {
+          "id": "section_direccion",
+          "title": "Dirección",
+          "viewRoles": ["administrativo"],
+          "fields": [
+            { "id": "direccion_completa", "label": "Dirección", "type": "text", "format": "{calle} {numero}, {localidad}, {provincia} ({cp})" }
+          ]
+        },
+        {
+          "id": "section_historial",
+          "title": "Historial de Juntas",
+          "type": "embedded-table",
+          "source": "/api/juntas?paciente_id=:id",
+          "viewRoles": ["administrativo", "medico_evaluador"],
+          "columns": [
+            { "id": "fecha_realizacion", "label": "Fecha" },
+            { "id": "estado", "label": "Estado" },
+            { "id": "medico_evaluador", "label": "Médico" }
+          ]
+        }
+      ],
+      "actions": [
+        { "id": "btn_edit", "label": "Editar", "roles": ["administrativo"], "link": "/patients/:id/edit" },
+        { "id": "btn_new_junta", "label": "Nueva Junta", "roles": ["administrativo", "medico_evaluador"], "link": "/juntas/new?paciente=:id" }
+      ]
+    },
+    {
+      "id": "users_list",
+      "path": "/users",
+      "title": "Gestión de Usuarios",
+      "layout": "table-view",
+      "roles": ["administrativo"],
+      "filters": [
+        { "id": "filter_search", "label": "Buscar", "type": "text", "placeholder": "Nombre, email o DNI..." },
+        { "id": "filter_role", "label": "Rol", "type": "select", "options": ["administrativo", "medico_evaluador", "director_medico", "rrhh", "gerencial"] },
+        { "id": "filter_estado", "label": "Estado", "type": "select", "options": ["ACTIVO", "INACTIVO"] }
+      ],
+      "columns": [
+        { "id": "col_nombre", "label": "Nombre" },
+        { "id": "col_email", "label": "Email" },
+        { "id": "col_dni", "label": "DNI" },
+        { "id": "col_role", "label": "Rol" },
+        { "id": "col_estado", "label": "Estado" },
+        { "id": "col_acciones", "label": "Acciones" }
+      ],
+      "actions": [
+        { "id": "btn_new_user", "label": "Nuevo Usuario", "link": "/users/new" }
+      ]
+    },
+    {
+      "id": "user_form",
+      "path": "/users/new",
+      "altPath": "/users/:id/edit",
+      "title": "Formulario de Usuario",
+      "layout": "form-single",
+      "roles": ["administrativo"],
+      "fields": [
+        {
+          "id": "nombre_completo",
+          "label": "Nombre Completo",
+          "type": "text",
+          "validations": { "required": true, "minLength": 3 },
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "email",
+          "label": "Correo Electrónico",
+          "type": "email",
+          "validations": { "required": true, "pattern": "^[^@]+@[^@]+\\.[^@]+$" },
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "dni",
+          "label": "DNI",
+          "type": "text",
+          "validations": { "required": true, "pattern": "^[0-9]{7,8}$" },
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "role_id",
+          "label": "Rol",
+          "type": "select",
+          "source": "/api/roles",
+          "validations": { "required": true },
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "matricula",
+          "label": "Matrícula",
+          "type": "text",
+          "validations": { "required": false },
+          "showWhen": { "role_id": ["medico_evaluador", "director_medico"] },
+          "conditionalValidation": { "required": true, "when": { "role_id": ["medico_evaluador", "director_medico"] } },
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "especialidad",
+          "label": "Especialidad",
+          "type": "text",
+          "validations": { "required": false },
+          "showWhen": { "role_id": ["medico_evaluador", "director_medico"] },
+          "conditionalValidation": { "required": true, "when": { "role_id": ["medico_evaluador", "director_medico"] } },
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "password",
+          "label": "Contraseña",
+          "type": "password",
+          "validations": { "required": true, "minLength": 8 },
+          "note": "Solo visible al crear usuario",
+          "editRoles": ["administrativo"]
+        },
+        {
+          "id": "estado",
+          "label": "Estado",
+          "type": "select",
+          "options": [
+            { "value": "ACTIVO", "label": "Activo" },
+            { "value": "INACTIVO", "label": "Inactivo" }
+          ],
+          "defaultValue": "ACTIVO",
+          "editRoles": ["administrativo"]
+        }
+      ],
+      "actions": [
+        { "id": "btn_cancel", "label": "Cancelar", "type": "button", "variant": "secondary", "action": "cancel" },
+        { "id": "btn_save", "label": "Guardar", "type": "submit", "variant": "primary" }
+      ]
+    }
+  ],
+  "sidebar": {
+    "administrativo": [
+      { "id": "nav_dashboard", "label": "Dashboard", "icon": "home", "path": "/dashboard" },
+      { "id": "nav_users", "label": "Usuarios", "icon": "users", "path": "/users" },
+      { "id": "nav_patients", "label": "Pacientes", "icon": "user-plus", "path": "/patients" },
+      { "id": "nav_juntas", "label": "Juntas", "icon": "clipboard", "path": "/juntas" }
+    ],
+    "medico_evaluador": [
+      { "id": "nav_dashboard", "label": "Dashboard", "icon": "home", "path": "/dashboard" },
+      { "id": "nav_my_juntas", "label": "Mis Juntas", "icon": "clipboard", "path": "/juntas?mine=true" },
+      { "id": "nav_new_junta", "label": "Nueva Junta", "icon": "plus-circle", "path": "/juntas/new" },
+      { "id": "nav_patients", "label": "Pacientes", "icon": "users", "path": "/patients" }
+    ],
+    "director_medico": [
+      { "id": "nav_dashboard", "label": "Dashboard", "icon": "home", "path": "/dashboard" },
+      { "id": "nav_pending", "label": "Pendientes", "icon": "clock", "path": "/juntas?estado=EN_REVISION" },
+      { "id": "nav_all_juntas", "label": "Todas las Juntas", "icon": "clipboard", "path": "/juntas" }
+    ],
+    "rrhh": [
+      { "id": "nav_dashboard", "label": "Dashboard", "icon": "home", "path": "/dashboard" },
+      { "id": "nav_juntas", "label": "Juntas", "icon": "clipboard", "path": "/juntas" },
+      { "id": "nav_reports", "label": "Reportes", "icon": "file-text", "path": "/reports" }
+    ],
+    "gerencial": [
+      { "id": "nav_dashboard", "label": "Dashboard", "icon": "home", "path": "/dashboard" },
+      { "id": "nav_metrics", "label": "Métricas", "icon": "bar-chart", "path": "/metrics" },
+      { "id": "nav_juntas", "label": "Juntas", "icon": "clipboard", "path": "/juntas" }
+    ]
+  },
+  "missing": [
+    "MISSING:campos_dictamen_medico - Se usará formulario placeholder hasta recibir documento oficial con campos específicos"
+  ]
+}
