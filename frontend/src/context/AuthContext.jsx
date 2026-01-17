@@ -9,16 +9,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check for stored user in localStorage on mount
-        const storedUser = localStorage.getItem('vdc_user');
-        if (storedUser) {
-            try {
-                setUser(JSON.parse(storedUser));
-            } catch (e) {
-                console.error("Failed to parse stored user", e);
-                localStorage.removeItem('vdc_user');
-            }
-        }
+        // No persistir sesión - siempre empezar sin usuario
         setLoading(false);
     }, []);
 
@@ -71,7 +62,7 @@ export const AuthProvider = ({ children }) => {
 
         if (mockUser) {
             setUser(mockUser);
-            localStorage.setItem('vdc_user', JSON.stringify(mockUser));
+            // No guardar en localStorage para que siempre pida login
             return { success: true };
         } else {
             return { success: false, error: 'Rol no válido para demo' };
@@ -80,7 +71,6 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem('vdc_user');
     };
 
     const value = {

@@ -53,11 +53,11 @@ function AppRoutes() {
       } />
 
 
-      {/* Redirect root to juntas/new */}
-      <Route path="/" element={<Navigate to="/juntas/new" replace />} />
+      {/* Redirect root to login */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
       {/* Catch all */}
-      <Route path="*" element={<Navigate to="/juntas/new" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
